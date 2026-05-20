@@ -9,6 +9,7 @@ group = "io.github.denglei1024"
 version = "0.1.1"
 
 val localRiderPath = providers.gradleProperty("localRiderPath")
+    .orElse(providers.environmentVariable("RIDER_HOME"))
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
