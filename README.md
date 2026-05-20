@@ -38,31 +38,4 @@
 
 ---
 
-## 安装
-
-1. 构建或下载插件 `.zip` 包
-2. **Settings → Plugins → ⚙️ → Install Plugin from Disk…**，选择 `build\distributions\` 下的 `.zip`
-3. 重启 Rider
-
-## 使用方式
-
-安装后，Rider 底部出现 **Structured Logs** 面板。启动任意 Run / Debug 配置，插件自动捕获并解析输出。在面板中可按会话浏览、搜索过滤、查看详情。
-
-## 构建
-
-需要 JDK 21+。
-
-```powershell
-# 标准构建
-.\gradlew.bat buildPlugin
-
-# 使用本地 Rider（推荐，跳过 SDK 下载）
-.\gradlew.bat -PlocalRiderPath="C:\Program Files\JetBrains\Rider" buildPlugin
-```
-
-产物位于 `build\distributions\`，兼容 Rider 2026.1.x。
-
-## 反馈
-
-欢迎通过 [GitHub Issues](https://github.com/denglei1024/rd-structured-console-logs/issues) 提交问题或建议。
 
