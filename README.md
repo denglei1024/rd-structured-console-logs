@@ -40,72 +40,29 @@
 
 ## 安装
 
-### 从本地文件安装
-
-1. [构建插件](#从源码构建) 或下载已发布的 `.zip` 包
-2. 打开 Rider，进入 **Settings / Preferences → Plugins**
-3. 点击齿轮图标 ⚙️，选择 **Install Plugin from Disk…**
-4. 选择 `build\distributions\` 目录下的 `.zip` 文件
-5. 重启 Rider
-
----
+1. 构建或下载插件 `.zip` 包
+2. **Settings → Plugins → ⚙️ → Install Plugin from Disk…**，选择 `build\distributions\` 下的 `.zip`
+3. 重启 Rider
 
 ## 使用方式
 
-安装完成后，Rider 底部工具栏将出现 **Structured Logs** 面板。
+安装后，Rider 底部出现 **Structured Logs** 面板。启动任意 Run / Debug 配置，插件自动捕获并解析输出。在面板中可按会话浏览、搜索过滤、查看详情。
 
-1. 正常启动任意 **Run** 或 **Debug** 配置
-2. 插件自动捕获进程输出并开始解析
-3. 在 **Structured Logs** 面板中：
-   - 从左侧 **会话列表** 选择目标会话
-   - 使用顶部工具栏进行**关键字搜索**或**级别 / 流筛选**
-   - 单击任意行，在**详情面板**查看完整原始日志及解析字段
+## 构建
 
----
-
-## 从源码构建
-
-**环境要求：** JDK 21+
-
-**标准构建**（自动下载 Rider SDK）：
+需要 JDK 21+。
 
 ```powershell
+# 标准构建
 .\gradlew.bat buildPlugin
-```
 
-**使用本地 Rider 加速构建**（推荐，避免重复下载 SDK）：
-
-```powershell
+# 使用本地 Rider（推荐，跳过 SDK 下载）
 .\gradlew.bat -PlocalRiderPath="C:\Program Files\JetBrains\Rider" buildPlugin
 ```
 
-构建产物输出至：
+产物位于 `build\distributions\`，兼容 Rider 2026.1.x。
 
-```
-build\distributions\
-```
+## 反馈
 
----
-
-## 兼容性
-
-| 插件版本 | Rider 版本 |
-|----------|------------|
-| 0.1.x    | 2026.1.x   |
-
----
-
-## 设计说明
-
-本插件采用**镜像增强**策略，不修改 Rider 原生 Console 的渲染逻辑，而是通过独立 Tool Window 并行展示结构化视图。这一方式：
-
-- 保持与 Rider 原生 API 的兼容性
-- 降低因 IDE 升级导致的维护成本
-- 与原生 Console 互不干扰，可按需切换使用
-
----
-
-## 反馈与贡献
-
-如遇问题或有功能建议，欢迎在 [GitHub Issues](https://github.com/denglei1024/rd-structured-console-logs/issues) 中提交。
+欢迎通过 [GitHub Issues](https://github.com/denglei1024/rd-structured-console-logs/issues) 提交问题或建议。
 
