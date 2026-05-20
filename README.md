@@ -1,59 +1,41 @@
 # Structured Console Log
 
-一个面向 JetBrains Rider 的插件原型，用结构化方式接管 Run/Debug 控制台输出，帮助你更快定位关键信息，而不是在原始文本里来回翻找。
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/denglei1024/rd-structured-console-logs)
+[![Rider](https://img.shields.io/badge/Rider-2026.1-orange.svg)](https://www.jetbrains.com/rider/)
+[![JDK](https://img.shields.io/badge/JDK-21+-green.svg)](https://www.oracle.com/java/technologies/downloads/)
 
-## 功能
+> 告别在滚动日志中大海捞针——将 Run/Debug 控制台输出转化为结构化、可过滤的日志视图。
 
-- 自动监听新启动的 Run/Debug 进程，并按会话归档日志
-- 对控制台输出做 best-effort 结构化解析，识别：
-  - 时间戳
-  - 日志级别（TRACE / DEBUG / INFO / WARN / ERROR / FATAL）
-  - logger/category
-  - JSON 风格字段
-  - `key=value` 风格字段
-- 在 `Structured Logs` Tool Window 中提供：
-  - 会话列表
-  - 表格式日志浏览
-  - 关键字搜索
-  - 输出流筛选（stdout / stderr / system）
-  - 级别筛选
-  - 详情面板，显示原始日志和解析出的字段
-- 自动合并常见堆栈续行，减少异常日志被拆碎的问题
+---
 
-## 插件结构
+## 概述
 
-- `StructuredLogProjectService`：监听运行进程，维护会话和日志数据
-- `StructuredLogParser`：将原始文本解析成结构化日志条目
-- `StructConsoleLogToolWindowFactory` / `StructConsoleLogPanel`：提供可视化界面与筛选交互
-- `StructConsoleLogProjectActivity`：项目启动后主动初始化日志服务
+**Structured Console Log** 是一款面向 JetBrains Rider 的插件，它在不改动原生 Console 的前提下，通过独立的 Tool Window 镜像并增强控制台输出。插件自动解析日志级别、时间戳、字段等关键信息，让你可以像查询数据一样浏览运行日志。
 
-## 本地构建
+---
 
-需要 JDK 21。
+## 功能特性
 
-```powershell
-.\gradlew.bat buildPlugin
-```
+### 🔍 结构化解析
+自动识别控制台输出中的：
+- **时间戳** — 自动提取并格式化
+- **日志级别** — `TRACE` / `DEBUG` / `INFO` / `WARN` / `ERROR` / `FATAL`
+- **Logger / Category** — 快速定位来源
+- **JSON 字段** — 内联 JSON 自动展开
+- **`key=value` 字段** — 结构化键值对提取
 
-如果当前机器已经安装了 Rider，建议直接复用本地 IDE 目录，避免再次下载完整 SDK：
+### 📋 Structured Logs Tool Window
+在独立面板中提供完整的日志浏览体验：
+- **会话列表** — 按 Run/Debug 进程归档，历史会话随时回看
+- **表格式日志视图** — 每条日志结构清晰，一目了然
+- **关键字搜索** — 即时过滤，快速定位目标日志
+- **输出流筛选** — 按 `stdout` / `stderr` / `system` 分类查看
+- **级别筛选** — 聚焦关键错误，屏蔽无关噪音
+- **详情面板** — 显示原始日志原文及所有解析字段
 
-```powershell
-.\gradlew.bat -PlocalRiderPath="C:\Program Files\JetBrains\Rider" buildPlugin
-```
+### 🛡️ 异常日志聚合
+自动合并连续堆栈行，避免多行异常在表格中被拆散，保持异常信息完整可读。
 
-产物会生成在：
+---
 
-```text
-build\distributions\
-```
-
-## 当前范围
-
-这个版本是可运行的 MVP，重点解决：
-
-1. 捕获控制台输出
-2. 结构化展示日志
-3. 快速过滤与查看详情
-
-它暂未改写 Rider 原生 Console 的渲染逻辑，而是通过独立 Tool Window 镜像和增强日志视图，降低实现复杂度并保持 API 稳定性。
 
