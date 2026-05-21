@@ -36,14 +36,17 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.swing.DefaultListModel
 import javax.swing.JComboBox
+import javax.swing.JCheckBoxMenuItem
 import javax.swing.JList
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
+import javax.swing.table.TableColumn
 
 class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposable {
     private val parser = StructuredLogParser()
@@ -74,7 +77,10 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
     private val detailsMetaLabel = JBLabel("Select a log entry to inspect it.")
     private val copyRawLink = ActionLink("Copy raw") { copyCurrentRaw() }
     private val copyExecutableSqlLink = ActionLink("Copy executable SQL") { copyCurrentExecutableSql() }
+    private val columnsLink = ActionLink("Columns") { showColumnsPopup() }
     private val detailsArea = JBTextArea()
+    private val tableColumnsByModelIndex = linkedMapOf<Int, TableColumn>()
+    private val visibleTableColumnIndexes = ENTRY_COLUMNS.indices.toMutableSet()
     private var selectedSessionId: String? = null
     private var currentVisibleEntries: List<StructuredLogEntry> = emptyList()
     private var currentSelectedEntry: StructuredLogEntry? = null
@@ -158,7 +164,7 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
 
         val entriesPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(8, 8, 8, 12)
-            add(buildSectionHeader(entriesLabel), BorderLayout.NORTH)
+            add(buildSectionHeader(entriesLabel, columnsLink), BorderLayout.NORTH)
             add(JBScrollPane(table).apply {
                 border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1)
             }, BorderLayout.CENTER)
@@ -187,12 +193,13 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         }
     }
 
-    private fun buildSectionHeader(label: JBLabel): JPanel {
+    private fun buildSectionHeader(label: JBLabel, action: Component? = null): JPanel {
         return JPanel(BorderLayout()).apply {
             isOpaque = false
             border = JBUI.Borders.emptyBottom(6)
             label.foreground = UIUtil.getLabelInfoForeground()
             add(label, BorderLayout.WEST)
+            action?.let { add(it, BorderLayout.EAST) }
         }
     }
 
@@ -230,15 +237,16 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         table.rowHeight = JBUI.scale(24)
         table.setShowGrid(false)
         table.intercellSpacing = JBUI.emptySize()
-        table.columnModel.getColumn(0).preferredWidth = JBUI.scale(95)
-        table.columnModel.getColumn(1).preferredWidth = JBUI.scale(80)
-        table.columnModel.getColumn(2).preferredWidth = JBUI.scale(180)
-        table.columnModel.getColumn(3).preferredWidth = JBUI.scale(80)
-        table.columnModel.getColumn(4).preferredWidth = JBUI.scale(900)
+        ENTRY_COLUMNS.forEach { column ->
+            table.columnModel.getColumn(column.modelIndex).preferredWidth = JBUI.scale(column.preferredWidth)
+        }
         table.columnModel.getColumn(0).cellRenderer = SecondaryTextRenderer()
         table.columnModel.getColumn(1).cellRenderer = LevelRenderer()
         table.columnModel.getColumn(2).cellRenderer = SecondaryTextRenderer()
         table.columnModel.getColumn(3).cellRenderer = SecondaryTextRenderer()
+        ENTRY_COLUMNS.indices.forEach { modelIndex ->
+            tableColumnsByModelIndex[modelIndex] = table.columnModel.getColumn(modelIndex)
+        }
         table.emptyText.text = "No log entries for the current session"
     }
 
@@ -491,6 +499,41 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         applyFilters()
     }
 
+    private fun showColumnsPopup() {
+        val popup = JPopupMenu()
+        ENTRY_COLUMNS.forEach { column ->
+            val item = JCheckBoxMenuItem(column.title, column.modelIndex in visibleTableColumnIndexes)
+            item.addActionListener {
+                if (item.isSelected) {
+                    visibleTableColumnIndexes += column.modelIndex
+                } else if (visibleTableColumnIndexes.size > 1) {
+                    visibleTableColumnIndexes -= column.modelIndex
+                } else {
+                    item.isSelected = true
+                    return@addActionListener
+                }
+                updateVisibleTableColumns()
+            }
+            popup.add(item)
+        }
+        popup.show(columnsLink, 0, columnsLink.height)
+    }
+
+    private fun updateVisibleTableColumns() {
+        val columnModel = table.columnModel
+        tableColumnsByModelIndex.values
+            .filter { column -> column.isAttachedTo(columnModel) }
+            .forEach(columnModel::removeColumn)
+
+        ENTRY_COLUMNS
+            .filter { column -> column.modelIndex in visibleTableColumnIndexes }
+            .forEach { column -> columnModel.addColumn(tableColumnsByModelIndex.getValue(column.modelIndex)) }
+    }
+
+    private fun TableColumn.isAttachedTo(columnModel: javax.swing.table.TableColumnModel): Boolean {
+        return (0 until columnModel.columnCount).any { index -> columnModel.getColumn(index) === this }
+    }
+
     private fun createFilterCheckBox(text: String): JBCheckBox {
         return JBCheckBox(text, true).apply {
             isOpaque = false
@@ -504,15 +547,20 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         override fun toString(): String = label
     }
 
+    private data class EntryColumn(
+        val modelIndex: Int,
+        val title: String,
+        val preferredWidth: Int
+    )
+
     private class StructuredLogTableModel : AbstractTableModel() {
-        private val columns = arrayOf("Time", "Level", "Logger", "Stream", "Message")
         private var entries: List<StructuredLogEntry> = emptyList()
 
         override fun getRowCount(): Int = entries.size
 
-        override fun getColumnCount(): Int = columns.size
+        override fun getColumnCount(): Int = ENTRY_COLUMNS.size
 
-        override fun getColumnName(column: Int): String = columns[column]
+        override fun getColumnName(column: Int): String = ENTRY_COLUMNS[column].title
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
             val entry = entries[rowIndex]
@@ -617,5 +665,12 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         private val INFO_COLOR = JBColor(0x2E7D32, 0x6FB96F)
         private val WARN_COLOR = JBColor(0xB76E00, 0xD9A343)
         private val ERROR_COLOR = UIUtil.getErrorForeground()
+        private val ENTRY_COLUMNS = listOf(
+            EntryColumn(0, "Time", 95),
+            EntryColumn(1, "Level", 80),
+            EntryColumn(2, "Logger", 180),
+            EntryColumn(3, "Stream", 80),
+            EntryColumn(4, "Message", 900)
+        )
     }
 }
