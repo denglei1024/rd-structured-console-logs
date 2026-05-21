@@ -12,6 +12,11 @@
 
 **Log Explorer** 是一款面向 JetBrains Rider 的插件，它在不改动原生 Console 的前提下，通过独立的 Tool Window 镜像并增强控制台输出。插件自动解析日志级别、时间戳、字段等关键信息，让你可以像查询数据一样浏览运行日志。
 
+<script src="https://plugins.jetbrains.com/assets/scripts/mp-widget.js"></script>
+<script>
+  // Please, replace #yourelement with a real element id on your webpage
+  MarketplaceWidget.setupMarketplaceWidget('install', 31883, "#yourelement");
+</script>
 ---
 
 ## 功能特性
