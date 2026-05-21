@@ -109,7 +109,7 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
 
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
             isOpaque = false
-            add(JBLabel("Structured Logs").apply {
+            add(JBLabel("Log Explorer").apply {
                 font = font.deriveFont(font.size2D + 1f)
             })
             add(JBLabel("  ").apply { isOpaque = false })

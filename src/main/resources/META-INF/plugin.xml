@@ -1,10 +1,10 @@
 <idea-plugin>
-    <id>io.github.denglei1024.struct-console-log</id>
-    <name>Structured Console Log</name>
+    <id>io.github.denglei1024.log-explorer</id>
+    <name>Log Explorer</name>
     <vendor url="https://github.com/denglei1024">denglei1024</vendor>
 
     <description><![CDATA[
-        <p>Structured, filterable console log visualization for JetBrains Rider.</p>
+        <p>Structured, filterable console log exploration for JetBrains Rider.</p>
         <p>The plugin captures Run/Debug output, parses common log formats, and presents logs in a dedicated tool window with filters and detail inspection.</p>
     ]]></description>
 
@@ -12,7 +12,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.github.denglei1024.structconsolelog.services.StructuredLogProjectService"/>
-        <toolWindow id="Structured Logs"
+        <toolWindow id="Log Explorer"
                     anchor="bottom"
                     secondary="true"
                     factoryClass="com.github.denglei1024.structconsolelog.toolwindow.StructConsoleLogToolWindowFactory"/>
