@@ -166,7 +166,7 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         }
 
         val detailsPanel = JPanel(BorderLayout()).apply {
-            border = JBUI.Borders.empty(0, 8, 8, 12)
+            border = JBUI.Borders.empty(8, 8, 8, 12)
             add(buildDetailsHeader(), BorderLayout.NORTH)
             add(JBScrollPane(detailsArea).apply {
                 border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1)
@@ -245,8 +245,8 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
 
     private fun configureDetailsArea() {
         detailsArea.isEditable = false
-        detailsArea.lineWrap = false
-        detailsArea.wrapStyleWord = false
+        detailsArea.lineWrap = true
+        detailsArea.wrapStyleWord = true
         detailsArea.margin = JBUI.insets(10)
         detailsArea.font = EditorColorsManager.getInstance().globalScheme.getFont(EditorFontType.PLAIN)
         detailsArea.emptyText.text = "Select a log entry to inspect it."

@@ -3,6 +3,8 @@ package com.github.denglei1024.structconsolelog.parser
 import com.github.denglei1024.structconsolelog.model.LogLevel
 import com.github.denglei1024.structconsolelog.model.LogStream
 import com.github.denglei1024.structconsolelog.model.StructuredLogEntry
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 
 data class SqlLogDetails(
@@ -113,7 +115,7 @@ class StructuredLogParser {
     }
 
     fun sanitizeForDisplay(line: String): String {
-        return stripControlCodes(line).trimEnd()
+        return repairMojibake(stripControlCodes(line)).trimEnd()
     }
 
     fun extractSqlLog(rawText: String): SqlLogDetails? {
@@ -178,6 +180,50 @@ class StructuredLogParser {
             .trimEnd('\r')
             .replace(ansiEscapePattern, "")
             .replace(orphanedColorCodePattern, "")
+    }
+
+    private fun repairMojibake(text: String): String {
+        if (!text.hasMojibakeSignal()) {
+            return text
+        }
+
+        val originalScore = text.readabilityScore()
+        return listOfNotNull(
+            transcode(text, StandardCharsets.ISO_8859_1, StandardCharsets.UTF_8),
+            transcode(text, WINDOWS_1252, StandardCharsets.UTF_8),
+            transcode(text, GB18030, StandardCharsets.UTF_8)
+        )
+            .distinct()
+            .maxByOrNull { it.readabilityScore() }
+            ?.takeIf { it.readabilityScore() > originalScore + 2 }
+            ?: text
+    }
+
+    private fun transcode(text: String, sourceCharset: Charset, targetCharset: Charset): String? {
+        return runCatching { String(text.toByteArray(sourceCharset), targetCharset) }
+            .getOrNull()
+    }
+
+    private fun String.hasMojibakeSignal(): Boolean {
+        return any { it == '\uFFFD' || it.isPrivateUse() || it in MOJIBAKE_LATIN_CHARS }
+    }
+
+    private fun String.readabilityScore(): Int {
+        val cjkCount = count { it.isCjk() }
+        val replacementCount = count { it == '\uFFFD' }
+        val privateUseCount = count { it.isPrivateUse() }
+        val mojibakeLatinCount = count { it in MOJIBAKE_LATIN_CHARS }
+        return cjkCount * 3 - replacementCount * 8 - privateUseCount * 6 - mojibakeLatinCount * 3
+    }
+
+    private fun Char.isCjk(): Boolean {
+        return this in '\u3400'..'\u4DBF' ||
+            this in '\u4E00'..'\u9FFF' ||
+            this in '\uF900'..'\uFAFF'
+    }
+
+    private fun Char.isPrivateUse(): Boolean {
+        return this in '\uE000'..'\uF8FF'
     }
 
     private fun firstNonBlank(vararg values: String?): String? {
@@ -262,6 +308,35 @@ class StructuredLogParser {
     private fun groupValue(match: MatchResult?, groupName: String): String? {
         val namedGroups = match?.groups as? MatchNamedGroupCollection ?: return null
         return namedGroups[groupName]?.value
+    }
+
+    companion object {
+        private val GB18030: Charset = Charset.forName("GB18030")
+        private val WINDOWS_1252: Charset = Charset.forName("windows-1252")
+        private val MOJIBAKE_LATIN_CHARS = setOf(
+            'Ã',
+            'Â',
+            'Ä',
+            'Å',
+            'Æ',
+            'Ç',
+            'È',
+            'É',
+            'Ð',
+            'Ñ',
+            'Ø',
+            'Ù',
+            'à',
+            'á',
+            'â',
+            'ã',
+            'ä',
+            'å',
+            'æ',
+            'ç',
+            'è',
+            'é'
+        )
     }
 }
 

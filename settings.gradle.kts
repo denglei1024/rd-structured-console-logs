@@ -1,6 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
-rootProject.name = "struct-console-log"
+rootProject.name = "rd-structured-console-log"
 
 pluginManagement {
     repositories {

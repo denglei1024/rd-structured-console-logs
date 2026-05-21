@@ -6,6 +6,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 class StructuredLogParserTest {
     private val parser = StructuredLogParser()
@@ -76,6 +78,24 @@ class StructuredLogParserTest {
             "    |-请求参数(Body)：[{\"Key\":\"input\"},{\"Key\":\"other\"}",
             sanitized
         )
+    }
+
+    @Test
+    fun `repairs utf8 text decoded as gb18030`() {
+        val garbled = String("中文日志".toByteArray(StandardCharsets.UTF_8), Charset.forName("GB18030"))
+
+        val sanitized = parser.sanitizeForDisplay("INFO $garbled")
+
+        assertEquals("INFO 中文日志", sanitized)
+    }
+
+    @Test
+    fun `repairs utf8 text decoded as latin1`() {
+        val garbled = String("请求参数".toByteArray(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1)
+
+        val sanitized = parser.sanitizeForDisplay("INFO $garbled")
+
+        assertEquals("INFO 请求参数", sanitized)
     }
 
     @Test

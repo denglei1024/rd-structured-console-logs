@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.denglei1024"
-version = "0.1.1"
+version = "0.1.2"
 
 val localRiderPath = providers.gradleProperty("localRiderPath")
     .orElse(providers.environmentVariable("RIDER_HOME"))
