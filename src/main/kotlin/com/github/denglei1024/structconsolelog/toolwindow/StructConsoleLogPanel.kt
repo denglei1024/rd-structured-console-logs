@@ -11,8 +11,6 @@ import com.github.denglei1024.structconsolelog.services.StructuredLogProjectServ
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
-import com.intellij.openapi.editor.colors.EditorColorsManager
-import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.DocumentAdapter
@@ -42,6 +40,7 @@ import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
+import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
@@ -248,7 +247,7 @@ class StructConsoleLogPanel(project: Project) : JPanel(BorderLayout()), Disposab
         detailsArea.lineWrap = true
         detailsArea.wrapStyleWord = true
         detailsArea.margin = JBUI.insets(10)
-        detailsArea.font = EditorColorsManager.getInstance().globalScheme.getFont(EditorFontType.PLAIN)
+        detailsArea.font = UIManager.getFont("TextArea.font") ?: detailsArea.font
         detailsArea.emptyText.text = "Select a log entry to inspect it."
     }
 

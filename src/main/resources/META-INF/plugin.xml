@@ -13,6 +13,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.github.denglei1024.structconsolelog.services.StructuredLogProjectService"/>
         <toolWindow id="Log Explorer"
+                    icon="/icons/logExplorer.svg"
                     anchor="bottom"
                     secondary="true"
                     factoryClass="com.github.denglei1024.structconsolelog.toolwindow.StructConsoleLogToolWindowFactory"/>
