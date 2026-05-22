@@ -30,6 +30,8 @@ if "%DIRNAME%"=="" set DIRNAME=.
 set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%
 
+if not defined GRADLE_USER_HOME set GRADLE_USER_HOME=D:\devcache\gradle
+
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
 set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
